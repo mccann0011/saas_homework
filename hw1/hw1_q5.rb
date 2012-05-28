@@ -1,37 +1,3 @@
-# (Exercise 3.4 from ELLS)
-
-# In lecture we saw how attr_accessor uses metaprogramming to create getters and setters for object 
-# attributes on the fly.
-
-# Define a method attr_accessor_with_history that provides the same functionality as attr accessor 
-# but also tracks every value the attribute has ever had:
-
-# We'll start you off. The first thing to notice is that if we define attr_accessor_with_history in 
-# class Class, we can use it as in the snippet above. This is because, as ELLS mentions, in Ruby a 
-# class is simply an object of class Class. (If that makes your brain hurt, just don't worry about 
-# it for now. It'll come.) The second thing to notice is that Ruby provides a method class_eval that 
-# takes a string and evaluates it in the context of the current class, that is, the class from which 
-# you're calling attr_accessor_with_history. This string will need to contain a method definition 
-# that implements a setter-with-history for the desired attribute attr_name.
-
-# • Don't forget that the very first time the attribute receives a value, its history array will 
-#   have to be initialized.
-# • Don't forget that instance variables are referred to as @bar within getters and setters, as 
-#   Section 3.4 of ELLS explains.
-# • Although the existing attr_accessor can handle multiple arguments (e.g. attr_accessor :foo, 
-#   :bar), your version just needs to handle a single argument.
-# • Your implementation should be genreal enough to work in the context of any class and for 
-#   attributes of any (legal) variable name
-# • History of instance variables should be maintained separately for each object instance. that 
-#   is, if you do
-#       f = Foo.new
-#       f.bar = 1
-#       f.bar = 2
-#       f = Foo.new
-#       f. bar = 4
-#       f.bar_history
-#    then the last line should just return [nil,4], rather than [nil,1,2,4]
-
 class Class
    def attr_accessor_with_history(attr_name)
       # make sure it's a string
@@ -54,6 +20,33 @@ class Class
          
       # create attribute's history getter
       attr_reader attr_name+"_history" 
+   end
+end
+
+class Numeric
+   @@currencies = {'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
+
+   def method_missing(method_id)
+      singular_currency = method_id.to_s.gsub( /s$/, '')
+      if @@currencies.has_key?(singular_currency)
+         self * @@currencies[singular_currency]
+      else
+         super
+      end
+   end
+end
+
+class String
+   def palindrome?
+      s = self.downcase.gsub(/\W/, "")
+      return (s == s.reverse)
+   end
+end
+
+class Array
+   def palindrome?
+      r = self
+      return (self == r.reverse)
    end
 end
 
@@ -90,5 +83,36 @@ if __FILE__ == $0
    print h.inspect + "\n"
    # should just return [nil,4], rather than [nil,1,2,4]
 
-end
+#a) [ELLS ex. 3.11] Extend the currency-conversion example from lecture so that you can write
+#5.dollars.in(:euros)
+#10.euros.in(:rupees)
+#etc.
+# You should support the currencies 'dollars', 'euros', 'rupees' , 'yen' where the
+#conversions are: rupees to dollars, multiply by 0.019; yen to dollars, multiply by 0.013;
+#euro to dollars, multiply by 1.292.
+# Both the singular and plural forms of each currency should be acceptable, e.g.
+#1.dollar.in(:rupees) and 10.rupees.in(:euro) should work.
 
+   print "\n===== Test Case 4a\n"
+
+# b) Adapt your solution from the "palindromes" question so that instead of writing palindrome?
+# ("foo") you can write "foo".palindrome? HINT: this should require fewer than 5 lines
+# of code.
+
+   print "\n===== Test Case 4b\n"
+   puts "foo".palindrome?
+   puts "Madam, I'm Adam!".palindrome?
+
+# c) Adapt your palindrome solution so that it works on Enumerables. That is:
+# [1,2,3,2,1].palindrome?
+# => true
+# (It's not necessary for the collection's elements to be palindromes themselves--only that the
+# top-level collection be a palindrome.) HINT: this should require fewer than 5 lines of code.
+# Although hashes are considered Enumerables, your solution does not need to make sense for
+# hashes (though it should not error).
+
+   print "\n===== Test Case 4c\n"
+   puts [1,2,3,4,5].palindrome?
+   puts [1,2,3,2,1].palindrome?
+
+end
