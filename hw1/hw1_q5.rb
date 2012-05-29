@@ -24,16 +24,35 @@ class Class
 end
 
 class Numeric
-   @@currencies = {'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
-
+   @@currencies = {'dollar' => 1.0, 'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
+   @currency = 'dollar'
+   
    def method_missing(method_id)
       singular_currency = method_id.to_s.gsub( /s$/, '')
+      puts "Numeric::MethodMissing " + singular_currency
       if @@currencies.has_key?(singular_currency)
+         @currency = singular_currency
          self * @@currencies[singular_currency]
       else
          super
       end
    end
+
+   def in(new_currency)
+      print "My currency is ", @currency
+      print "Converting to  ", new_currency
+      
+      if @@currencies.has_key?(new_currency)
+         # Convert from current currency to dollars
+         value = self / @@currencies[@currency]
+
+         # Convert from dollars to new currency
+         value = value * @@currencies[new_currency]
+      else
+         value = 0.0
+      end
+   end
+      
 end
 
 class String
@@ -84,9 +103,7 @@ if __FILE__ == $0
    # should just return [nil,4], rather than [nil,1,2,4]
 
 #a) [ELLS ex. 3.11] Extend the currency-conversion example from lecture so that you can write
-#5.dollars.in(:euros)
-#10.euros.in(:rupees)
-#etc.
+#5.dollars.in(:euros), 10.euros.in(:rupees)
 # You should support the currencies 'dollars', 'euros', 'rupees' , 'yen' where the
 #conversions are: rupees to dollars, multiply by 0.019; yen to dollars, multiply by 0.013;
 #euro to dollars, multiply by 1.292.
@@ -94,7 +111,15 @@ if __FILE__ == $0
 #1.dollar.in(:rupees) and 10.rupees.in(:euro) should work.
 
    print "\n===== Test Case 4a\n"
+   balance = 20.00
+   puts "Dollars " + balance.dollars.to_s()
+   puts "Euros   " + balance.euros.to_s()
+   puts "Yen     " + balance.yen.to_s()
+   puts "Rupee   " + balance.rupees.to_s()
 
+  5.dollars.in(:euros)
+  10.euros.in(:rupees)
+   
 # b) Adapt your solution from the "palindromes" question so that instead of writing palindrome?
 # ("foo") you can write "foo".palindrome? HINT: this should require fewer than 5 lines
 # of code.
