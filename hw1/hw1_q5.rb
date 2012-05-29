@@ -25,34 +25,58 @@ end
 
 class Numeric
    @@currencies = {'dollar' => 1.0, 'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
-   @currency = 'dollar'
    
    def method_missing(method_id)
       singular_currency = method_id.to_s.gsub( /s$/, '')
-      puts "Numeric::MethodMissing " + singular_currency
+      # puts "Numeric::MethodMissing " + singular_currency
       if @@currencies.has_key?(singular_currency)
-         @currency = singular_currency
-         self * @@currencies[singular_currency]
+         #Currency.new(singular_currency, self * @@currencies[singular_currency])
+         Currency.new(singular_currency, self)
       else
          super
       end
+   end      
+end
+
+class Currency
+   @@currencies = {'dollar' => 1.0, 'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
+
+   def initialize
+      @currency = 'dollar'
+      @value    = 0.0
    end
 
+   def initialize(currency, value)
+      @currency = currency
+      @value    = value
+   end
+   
    def in(new_currency)
-      print "My currency is ", @currency
-      print "Converting to  ", new_currency
+      #puts "My value is    " + @value.to_s()
+      #puts "My currency is " + @currency
+
+      singular_currency = new_currency.to_s.gsub( /s$/, '')
+      #puts "Converting to  " + singular_currency.to_s()
       
-      if @@currencies.has_key?(new_currency)
+      if @@currencies.has_key?(singular_currency)
          # Convert from current currency to dollars
-         value = self / @@currencies[@currency]
+         #puts @value
+         value = @value * @@currencies[@currency]
+         #puts value
 
          # Convert from dollars to new currency
-         value = value * @@currencies[new_currency]
+         value = value / @@currencies[singular_currency]
+         #puts value
       else
          value = 0.0
       end
-   end
       
+      return value
+   end
+   
+   def to_s()
+      return @value.to_s() + " " + @currency
+   end
 end
 
 class String
@@ -62,10 +86,16 @@ class String
    end
 end
 
-class Array
+class Object
    def palindrome?
-      r = self
-      return (self == r.reverse)
+      puts "*** " + self.class.to_s() + " ***"
+      if self.respond_to?("reverse")
+         #puts "Responds to reverse()"
+         r = self
+         result = (self == r.reverse)
+      else
+         result = false
+      end
    end
 end
 
@@ -117,8 +147,23 @@ if __FILE__ == $0
    puts "Yen     " + balance.yen.to_s()
    puts "Rupee   " + balance.rupees.to_s()
 
-  5.dollars.in(:euros)
-  10.euros.in(:rupees)
+   puts "5 dollars = " + 5.dollars.in(:euros).to_s()
+   puts "10 euros  = " + 10.euros.in(:rupees).to_s()
+   
+   puts 2.rupee.in(:dollar)
+   # between?(0.037, 0.039)
+   puts 3.yen.in(:dollar)
+   # between?(0.038, 0.040)
+   puts 6.euro.in(:dollar)
+   # between?(7.75, 7.76)
+   puts 2.rupees.in(:dollars)
+   # between?(0.037, 0.039)
+   puts 3.yen.in(:dollars)
+   # between?(0.038, 0.040)
+   puts 6.euros.in(:dollars)
+   # between?(7.75, 7.76)
+   puts 5.rupees.in(:yen)
+   # between?(7.2, 7.4)
    
 # b) Adapt your solution from the "palindromes" question so that instead of writing palindrome?
 # ("foo") you can write "foo".palindrome? HINT: this should require fewer than 5 lines
@@ -140,4 +185,9 @@ if __FILE__ == $0
    puts [1,2,3,4,5].palindrome?
    puts [1,2,3,2,1].palindrome?
 
+   pvalue = {"hello"=> "world"}.palindrome?
+   puts pvalue
+   
+   (1..2).palindrome?
+   
 end
